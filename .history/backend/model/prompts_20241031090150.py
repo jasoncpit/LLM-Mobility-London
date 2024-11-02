@@ -1,6 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-PLANNER_SYSTEM_PROMPT = """
+SYSTEM_PROMPT = """
 You are a helpful assistant that generates schedules for a user for the next seven days. 
 
 Based on the user's description, you should generate user schedule by detailing his activities, commute, and typical daily locations. 
@@ -15,22 +15,7 @@ Include activities such as meeting friends, gym, groceries, weekend outings, or 
 Here is the user's description:
 {user_description}
 
-You should be highlighting top level agenda of that, for example, Work from home, Work in the office, lunch with friends at a local pub, exercise at the gym. Make the activities mroe diverse and align with the user_description. 
-
-"""
-
-SCHEDULER_SYSTEM_PROMPT ="""
-
-Based on the user's description, and high level agenda of the day, generate logical daily schedule of a user. 
-
-<User Description>
-{user_description}
-</User Description>
-
-
-<Today's Plan>
-{daily_agenda}
-</Today's plan>
+The output format should be as follows, and you may vary the time intervals as appropriate
 
 Here is an example daily schedule of a user who lives in Stratford and works in West Kensington: 
 
@@ -64,9 +49,10 @@ Here is an example daily schedule of a user who lives in Stratford and works in 
 <Reason> I usually have lunch with colleagues if they are in the office, and we tend to go to the same place most days, usually a nearby supermarket for meal deal eg. Sainsburys or Tesco </Reason>
 </12:30>
 
-(repeat pattern throughout day with 1-2 unique activities)
+(repeat pattern throughout day with 1-2 unique activities, for Monday to Sunday)
 
 """
+
 
 
 

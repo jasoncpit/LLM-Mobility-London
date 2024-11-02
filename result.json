@@ -1,0 +1,63 @@
+{
+    "days": [
+        {
+            "day": "Monday",
+            "entries": [
+                {
+                    "time": "07:00",
+                    "action": "Wake Up",
+                    "location": "Stratford, London",
+                    "reason": "I usually wake up at 7am to start my day, as I live quite far from work."
+                },
+                {
+                    "time": "07:45",
+                    "action": "Breakfast with partner",
+                    "location": "Stratford, London",
+                    "reason": "I usually have breakfast with my partner at 7:45am, typically oatmeal with fruits."
+                },
+                {
+                    "time": "08:30",
+                    "action": "Commute by train to West Kensington for work",
+                    "location": "Stratford Station, London",
+                    "reason": "I usually commute by tube to work, as it is the most convenient and quickest way to get there."
+                },
+                {
+                    "time": "09:15",
+                    "action": "Start work",
+                    "location": "West Kensington Office, London",
+                    "reason": "I usually start work at 9:15am, and I like to have a coffee before work."
+                },
+                {
+                    "time": "12:30",
+                    "action": "Lunch with colleagues",
+                    "location": "Nearby Caf\u00e9, West Kensington, London",
+                    "reason": "I usually have lunch with colleagues at a nearby caf\u00e9."
+                },
+                {
+                    "time": "17:30",
+                    "action": "Finish work and commute back home",
+                    "location": "West Kensington Station, London",
+                    "reason": "I finish work at 5:30pm and take the tube back home."
+                },
+                {
+                    "time": "18:15",
+                    "action": "Go for a run in the park",
+                    "location": "Stratford Park, London",
+                    "reason": "I like to unwind by going for a run in the park after work."
+                },
+                {
+                    "time": "19:30",
+                    "action": "Dinner at home with partner",
+                    "location": "Stratford, London",
+                    "reason": "We usually cook dinner together and enjoy some quality time."
+                },
+                {
+                    "time": "20:30",
+                    "action": "Watch a movie together",
+                    "location": "Stratford, London",
+                    "reason": "We like to relax by watching a movie at home."
+                }
+            ]
+        }
+    ]
+}

@@ -15,7 +15,7 @@ Include activities such as meeting friends, gym, groceries, weekend outings, or 
 Here is the user's description:
 {user_description}
 
-You should be highlighting top level agenda of that, for example, Work from home, Work in the office, lunch with friends at a local pub, exercise at the gym. Make the activities mroe diverse and align with the user_description. 
+The output format should be as follows, and you may vary the time intervals as appropriate
 
 """
 
@@ -65,6 +65,7 @@ Here is an example daily schedule of a user who lives in Stratford and works in 
 </12:30>
 
 (repeat pattern throughout day with 1-2 unique activities)
+
 
 """
 
