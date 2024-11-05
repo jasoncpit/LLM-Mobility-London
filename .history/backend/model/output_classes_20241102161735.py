@@ -8,14 +8,14 @@ from enum import Enum
 class ScheduleEntry(BaseModel):
     time: str = Field(description="The time of the activity in 24 hour format")
     action: str = Field(description="The activity to be performed")
-    POI: str = Field(description="The category of point of interest to be visited")
     location: str = Field(description="The location of the activity")
+    reason: str = Field(description="The reason for the activity")
 
-class DailyPlan(BaseModel):
+class DailySchedule(BaseModel):
     entries: List[ScheduleEntry] = Field(description="The activities to be performed on the day")
 
-class WeeklyPlan(BaseModel):
-    days: List[DailyPlan] = Field(description="The activities to be performed on each day of the week")
+class WeeklySchedule(BaseModel):
+    days: List[DailySchedule] = Field(description="The activities to be performed on each day of the week")
 
 #########################
 # Weekly Planner 
@@ -29,10 +29,10 @@ class dayofweek(Enum):
     SATURDAY = "Saturday"
     SUNDAY = "Sunday"
 
-class DailySummary(BaseModel):
+class dailyplanner(BaseModel):
     day: dayofweek = Field(description="The day of the week")
     summary: str = Field(description="A key summary of the day")
-class WeeklySummary(BaseModel): 
-    days: List[DailySummary] = Field(description="The key summaries of each day of the week")
+class WeeklyPlanner(BaseModel): 
+    days: List[dailyplanner] = Field(description="The key summaries of each day of the week")
 
 

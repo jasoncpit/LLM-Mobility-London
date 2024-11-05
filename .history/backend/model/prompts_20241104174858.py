@@ -71,8 +71,7 @@ Instructions:
 3. <Location> Should be in Location, City format. You must specify the specific location of the activity. 
 4. <POI> Should be a category of point of interest, not a specific point of interest.  
 5. The schedule should be achievable, given the user's description and the high level agenda of the day. 
-6. You can specify more than granular activities for example, "Commute by train to work" is acceptable. 
-7. You should also provide trip to grocery stores and chained with previous activities based on travel. 
+6. You can specify more than granular activities for example, "Commute by train to work" is acceptable.
 """
 
 

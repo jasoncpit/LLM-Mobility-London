@@ -3,7 +3,7 @@ from model.prompts import SCHEDULER_SYSTEM_PROMPT, PLANNER_SYSTEM_PROMPT
 from model.output_classes import WeeklySummary, DailyPlan 
 import dotenv
 import os 
-class agent_creator:
+class agent:
     def __init__(self,llm):
         self.llm = llm    
     def create_weekly_planner(self):

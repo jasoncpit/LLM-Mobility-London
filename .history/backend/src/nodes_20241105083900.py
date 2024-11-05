@@ -14,10 +14,7 @@ class nodes:
         self.daily_scheduler = self.agent_creator.create_daily_scheduler()  
     #Step 1: Create the weekly summary 
     async def create_weekly_summary(self, WeeklyPlannerState):
-        weekly_plan = self.weekly_planner.ainvoke(WeeklyPlannerState) 
-        current_day_plan = weekly_plan.days[0].summary
-        current_day = weekly_plan.days[0].day
-        return {current_day_plan: current_day_plan, weekly_plan: weekly_plan, current_day: current_day}
+        return {current_day_plan: None, weekly_plan: None}
 
     #Step 2: Create the daily plan  
     async def create_daily_plan(self, WeeklyPlannerState): 
@@ -25,7 +22,7 @@ class nodes:
 
     #Step 3: Find the most relevant POIs and append to the daily plan 
     async def find_relevant_pois(self, WeeklyPlannerState):
-        pass 
+        return {current_day_plan: None}  
 
 
 if __name__ == "__main__":

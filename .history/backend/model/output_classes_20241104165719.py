@@ -8,8 +8,8 @@ from enum import Enum
 class ScheduleEntry(BaseModel):
     time: str = Field(description="The time of the activity in 24 hour format")
     action: str = Field(description="The activity to be performed")
-    POI: str = Field(description="The category of point of interest to be visited")
     location: str = Field(description="The location of the activity")
+    reason: str = Field(description="The reason for the activity")
 
 class DailyPlan(BaseModel):
     entries: List[ScheduleEntry] = Field(description="The activities to be performed on the day")

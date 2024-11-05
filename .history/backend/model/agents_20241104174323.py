@@ -1,9 +1,9 @@
 from langchain_core.prompts import ChatPromptTemplate
-from model.prompts import SCHEDULER_SYSTEM_PROMPT, PLANNER_SYSTEM_PROMPT 
-from model.output_classes import WeeklySummary, DailyPlan 
+from prompts import SCHEDULER_SYSTEM_PROMPT, PLANNER_SYSTEM_PROMPT 
+from output_classes import WeeklySummary,DailyPlan 
 import dotenv
 import os 
-class agent_creator:
+class agent:
     def __init__(self,llm):
         self.llm = llm    
     def create_weekly_planner(self):
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         "West Kensignton. He loves to travel and explore new places. He works from home three times a week."}
     )
     print(result)
-    example_schedule  = result.days[-2].summary 
+    example_schedule  = result.day[-2].summary 
     daily_planner = agent.create_daily_scheduler().invoke(
         {'user_description': "A 30 year old married software engineer lives in Stratford and works in "
         "West Kensignton. He loves to travel and explore new places. He works from home three times a week.",

@@ -67,12 +67,9 @@ Here is an example daily schedule of a user who lives in Stratford and works in 
 
 Instructions: 
 1. <Time> Should be in HH:MM format
-2. <Action> Can be a single activity, not a combination of activities.  
+2. <Action> Should be a single activity, not a combination of activities
 3. <Location> Should be in Location, City format. You must specify the specific location of the activity. 
 4. <POI> Should be a category of point of interest, not a specific point of interest.  
-5. The schedule should be achievable, given the user's description and the high level agenda of the day. 
-6. You can specify more than granular activities for example, "Commute by train to work" is acceptable. 
-7. You should also provide trip to grocery stores and chained with previous activities based on travel. 
 """
 
 
