@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/LLM-Mobility-London/static/css/main.5e756329.css",
+    "main.js": "/LLM-Mobility-London/static/js/main.c8c11933.js",
+    "static/js/879.bd375427.chunk.js": "/LLM-Mobility-London/static/js/879.bd375427.chunk.js",
+    "static/js/453.d6fca635.chunk.js": "/LLM-Mobility-London/static/js/453.d6fca635.chunk.js",
+    "index.html": "/LLM-Mobility-London/index.html",
+    "main.5e756329.css.map": "/LLM-Mobility-London/static/css/main.5e756329.css.map",
+    "main.c8c11933.js.map": "/LLM-Mobility-London/static/js/main.c8c11933.js.map",
+    "879.bd375427.chunk.js.map": "/LLM-Mobility-London/static/js/879.bd375427.chunk.js.map",
+    "453.d6fca635.chunk.js.map": "/LLM-Mobility-London/static/js/453.d6fca635.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5e756329.css",
+    "static/js/main.c8c11933.js"
+  ]
+}
