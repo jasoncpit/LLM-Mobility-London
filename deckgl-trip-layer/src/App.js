@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TripsLayer } from '@deck.gl/geo-layers';
 import {ScatterplotLayer} from '@deck.gl/layers';
 import {DeckGL} from '@deck.gl/react';
@@ -6,6 +6,8 @@ import {Map} from 'react-map-gl';
 import {BASEMAP} from '@deck.gl/carto';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import * as d3 from 'd3-ease';
+import {FlyToInterpolator} from '@deck.gl/core';
 
 function App() {
   const [tripData, setTripData] = useState([]);
@@ -19,59 +21,110 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [selectedPoint, setSelectedPoint] = useState(null);
+  const [showAllDays, setShowAllDays] = useState(false);
 
-  // Add trace information
-  const traceInfo = {
-    0: { age: 23, occupation: "PhD Student", description: "Daily commute to university" },
-    1: { age: 25, occupation: "Professional", description: "Business meetings across the city" },
-    2: { age: 17, occupation: "University Student", description: "Sightseeing tour" }
-  };
+  // Wrap traceInfo in useMemo
+  const traceInfo = useMemo(() => ({
+    0: { age: 23, occupation: "Postgraduate Student", description: "Daily commute to university" },
+    1: { age: 25, occupation: "Professional", description: "Young professional commuting to work 3 days a week" },
+    2: { age: 17, occupation: "University Student", description: "Induction week at university" }
+  }), []); // Empty dependency array since this data is static
 
-  // Update traceColors to be accessible throughout the component
-  const traceColors = {
+  // Wrap traceColors in useMemo
+  const traceColors = useMemo(() => ({
     0: [65, 182, 196],    // Turquoise blue
     1: [255, 127, 14],    // Orange
     2: [44, 160, 44]      // Green
-  };
+  }), []); // Empty dependency array since this data is static
 
   useEffect(() => {
     const loadTraces = async () => {
       try {
+        // Load each file separately with error handling
         const traces = await Promise.all([
-          fetch('./first_trace.json').then(resp => resp.json()),
-          fetch('./second_trace.json').then(resp => resp.json()),
-          fetch('./third_trace.json').then(resp => resp.json())
+          fetch('./first_trace.json')
+            .then(resp => resp.json())
+            .catch(err => {
+              console.error('Error loading first_trace.json:', err);
+              return null;
+            }),
+          fetch('./second_trace.json')
+            .then(resp => resp.json())
+            .catch(err => {
+              console.error('Error loading second_trace.json:', err);
+              return null;
+            }),
+          fetch('./third_trace.json')
+            .then(resp => resp.json())
+            .catch(err => {
+              console.error('Error loading third_trace.json:', err);
+              return null;
+            })
         ]);
+
+        // Filter out any null traces from failed loads
+        const validTraces = traces.filter(trace => trace !== null);
         
-        console.log('Loaded traces:', traces); // Debug log
+        // Add debug logging
+        console.log('Raw traces:', validTraces);
+        
+        // Debug the raw data structure
+        validTraces.forEach((trace, idx) => {
+          console.log(`Trace ${idx} days:`, {
+            trip_days: trace.trip_layer.day,
+            point_days: trace.point_layer.day
+          });
+        });
+
+        console.log('Raw traces data:', JSON.stringify(validTraces, null, 2));
 
         // Combine all traces with trace-specific colors
-        const allTrips = traces.flatMap((trace, traceIndex) => {
+        const allTrips = validTraces.flatMap((trace, traceIndex) => {
+          if (!trace.trip_layer?.routes) {
+            console.error(`Missing trip_layer or routes for trace ${traceIndex}`);
+            return [];
+          }
           const routes = trace.trip_layer.routes;
-          return routes.map((route, idx) => ({
-            path: route,
-            color: [...traceColors[traceIndex], 204],
-            traceIndex,
-            day: trace.trip_layer.day[idx]
-          }));
+          return routes.map((route, idx) => {
+            const day = trace.trip_layer.day?.[idx] || 'Monday';
+            console.log(`Trip ${traceIndex}, route ${idx}, day: ${day}`);
+            return {
+              path: route,
+              color: [...traceColors[traceIndex], 204],
+              traceIndex,
+              day
+            };
+          });
         });
         
-        const allPoints = traces.flatMap((trace, traceIndex) => {
-          return trace.point_layer.coordinates.map((coord, idx) => ({
-            position: coord,
-            poi_name: trace.point_layer.poi_name[idx],
-            action: trace.point_layer.action[idx],
-            time: trace.point_layer.time[idx],
-            day: trace.point_layer.day[idx],
-            travel_mode: trace.point_layer.travel_mode[idx],
-            traceIndex,
-            // Add trace info to each point
-            traceInfo: traceInfo[traceIndex]
-          }));
+        const allPoints = validTraces.flatMap((trace, traceIndex) => {
+          if (!trace.point_layer?.coordinates) {
+            console.error(`Missing point_layer or coordinates for trace ${traceIndex}`);
+            return [];
+          }
+          return trace.point_layer.coordinates.map((coord, idx) => {
+            const day = trace.point_layer.day?.[idx] || 'Monday';
+            console.log(`Point ${traceIndex}, coord ${idx}, day: ${day}`);
+            return {
+              position: coord,
+              poi_name: trace.point_layer.poi_name?.[idx] || 'Unknown Location',
+              action: trace.point_layer.action?.[idx] || 'Unknown Action',
+              time: trace.point_layer.time?.[idx] || '00:00',
+              day,
+              travel_mode: trace.point_layer.travel_mode?.[idx] || 'Unknown',
+              traceIndex,
+              traceInfo: traceInfo[traceIndex]
+            };
+          });
         });
 
-        console.log('Processed trips:', allTrips); // Debug log
-        console.log('Processed points:', allPoints); // Debug log
+        console.log('Processed trips:', allTrips.map(t => ({ day: t.day, traceIndex: t.traceIndex })));
+        console.log('Processed points:', allPoints.map(p => ({ day: p.day, traceIndex: p.traceIndex })));
+
+        console.log('Final processed data:', {
+          tripData: allTrips,
+          pointData: allPoints
+        });
 
         setTripData(allTrips);
         setPointData(allPoints);
@@ -86,10 +139,12 @@ function App() {
   const layers = [
     new TripsLayer({
       id: 'trips',
-      data: tripData.filter(d => 
-        selectedTraces[d.traceIndex] && 
-        d.day === selectedDay
-      ),
+      data: tripData.filter(d => {
+        const isVisible = selectedTraces[d.traceIndex] && 
+                         (showAllDays || String(d.day).trim() === String(selectedDay).trim());
+        console.log(`Trip - trace: ${d.traceIndex}, day: ${d.day}, selected: ${selectedDay}, visible: ${isVisible}`);
+        return isVisible;
+      }),
       getPath: d => d.path,
       getColor: d => d.color,
       opacity: 0.8,
@@ -100,27 +155,82 @@ function App() {
     }),
     new ScatterplotLayer({
       id: 'points',
-      data: pointData.filter(d => selectedTraces[d.traceIndex] && d.day === selectedDay),
+      data: pointData.filter(d => {
+        const isVisible = selectedTraces[d.traceIndex] && 
+                         (showAllDays || String(d.day).trim() === String(selectedDay).trim());
+        console.log(`Point - trace: ${d.traceIndex}, day: ${d.day}, selected: ${selectedDay}, visible: ${isVisible}`);
+        return isVisible;
+      }),
       getPosition: d => d.position,
       getColor: d => {
         const isSelected = selectedPoint && 
           selectedPoint.some(p => 
             p.position[0] === d.position[0] && 
-            p.position[1] === d.position[1]
+            p.position[1] === d.position[1] &&
+            p.day === d.day &&
+            p.action === d.action
           );
-        return isSelected ? [255, 255, 0, 255] : [...traceColors[d.traceIndex], 204];
+        return isSelected ? [0, 153, 255, 255] : [...traceColors[d.traceIndex], 204];
       },
       getRadius: d => {
         const isSelected = selectedPoint && 
           selectedPoint.some(p => 
             p.position[0] === d.position[0] && 
-            p.position[1] === d.position[1]
+            p.position[1] === d.position[1] &&
+            p.day === d.day &&
+            p.action === d.action
           );
         return isSelected ? 200 : 100;
       },
       opacity: 0.8,
       pickable: true,
-      onHover: info => setHoverInfo(info)
+      onHover: info => setHoverInfo(info),
+      transitions: {
+        getRadius: {
+          duration: 500,
+          easing: d3.easeCubicInOut
+        },
+        getColor: {
+          duration: 500,
+          easing: d3.easeCubicInOut
+        }
+      },
+      onClick: (info) => {
+        if (info.object) {
+          const {position, traceIndex, day, action} = info.object;
+          
+          // Find all points at this location
+          const pointsAtLocation = pointData.filter(p => 
+            p.position[0] === position[0] && 
+            p.position[1] === position[1] &&
+            p.day === day &&
+            p.action === action &&
+            selectedTraces[p.traceIndex]
+          );
+
+          // Update selected point
+          setSelectedPoint(
+            selectedPoint && 
+            selectedPoint.some(p => 
+              p.position[0] === position[0] && 
+              p.position[1] === position[1] &&
+              p.day === day &&
+              p.action === action
+            ) 
+              ? null 
+              : pointsAtLocation
+          );
+
+          // Expand the trace containing this point
+          setExpandedTraces(prev => ({
+            ...prev,
+            [traceIndex]: true
+          }));
+
+          // Zoom to the point
+          zoomToPoint(position[0], position[1]);
+        }
+      },
     })
   ];
 
@@ -213,17 +323,27 @@ function App() {
       );
     }
 
-    // Get unique days from pointData
-    const uniqueDays = [...new Set(pointData.map(point => point.day))].sort();
+    // Get unique days from pointData, including days from all traces regardless of selection
+    const uniqueDays = pointData.length > 0 
+      ? [...new Set(pointData.map(point => point.day))].sort()
+      : [];
     
-    // Group activities by trace for the selected day
+    // Group activities by trace for all traces, not just selected ones
     const timelineData = pointData
-      .filter(point => point.day === selectedDay)
       .reduce((acc, point) => {
         if (!acc[point.traceIndex]) {
           acc[point.traceIndex] = [];
         }
-        acc[point.traceIndex].push(point);
+        // Only add unique points
+        const isDuplicate = acc[point.traceIndex].some(existing => 
+          existing.time === point.time && 
+          existing.position[0] === point.position[0] && 
+          existing.position[1] === point.position[1] &&
+          existing.day === point.day
+        );
+        if (!isDuplicate) {
+          acc[point.traceIndex].push(point);
+        }
         return acc;
       }, {});
 
@@ -242,9 +362,14 @@ function App() {
           maxHeight: '80vh',
           overflowY: 'auto',
           cursor: isDragging ? 'grabbing' : 'auto',
-          userSelect: 'none' // Prevent text selection while dragging
+          userSelect: 'none',
         }}
-        onMouseDown={handleMouseDown}
+        onMouseDown={(e) => {
+          if (e.target.closest('.panel-header')) {
+            handleMouseDown(e);
+            e.stopPropagation();
+          }
+        }}
       >
         <div 
           className="panel-header"
@@ -253,8 +378,9 @@ function App() {
             justifyContent: 'space-between', 
             alignItems: 'center', 
             marginBottom: '15px',
-            cursor: 'grab',
-            padding: '5px'
+            cursor: isDragging ? 'grabbing' : 'grab',
+            padding: '5px',
+            pointerEvents: 'auto',
           }}
         >
           <h3 style={{ margin: 0 }}>Daily Timeline</h3>
@@ -272,37 +398,62 @@ function App() {
           </button>
         </div>
 
-        {/* Day selector dropdown */}
-        <select 
-          value={selectedDay}
-          onChange={(e) => setSelectedDay(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '8px',
-            marginBottom: '15px',
-            borderRadius: '4px'
-          }}
-        >
-          {uniqueDays.map(day => (
-            <option key={day} value={day}>{day}</option>
-          ))}
-        </select>
+        {/* Updated display mode toggle */}
+        <div style={{
+          display: 'flex',
+          gap: '10px',
+          marginBottom: '15px',
+          alignItems: 'center'
+        }}>
+          <select 
+            value={selectedDay}
+            onChange={(e) => setSelectedDay(e.target.value)}
+            disabled={showAllDays}
+            style={{
+              flex: 1,
+              padding: '8px',
+              borderRadius: '4px',
+              opacity: showAllDays ? 0.5 : 1
+            }}
+          >
+            {uniqueDays.map(day => (
+              <option key={day} value={day}>{day}</option>
+            ))}
+          </select>
+          <button
+            onClick={() => setShowAllDays(prev => !prev)}
+            style={{
+              padding: '8px 12px',
+              background: showAllDays ? '#007bff' : '#f8f9fa',
+              color: showAllDays ? 'white' : '#333',
+              border: '1px solid #dee2e6',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {showAllDays ? 'Show Single Day' : 'Show All Days'}
+          </button>
+        </div>
 
-        {/* Updated Timeline for each trace */}
+        {/* Updated Timeline for each trace - always show all traces */}
         {Object.entries(timelineData).map(([traceIndex, activities]) => {
           const trace = traceInfo[traceIndex];
           const color = `rgb(${traceColors[traceIndex].join(',')})`;
           const isExpanded = expandedTraces[traceIndex];
+          const isSelected = selectedTraces[traceIndex];
           
           return (
-            <div 
-              key={traceIndex} 
+            <div key={traceIndex} 
               style={{ 
                 marginBottom: '15px',
                 background: '#f8f9fa',
                 borderRadius: '8px',
                 padding: '12px',
-                border: '1px solid #eee'
+                border: '1px solid #eee',
+                opacity: isSelected ? 1 : 0.7,
+                transition: 'opacity 0.3s ease'
               }}
             >
               <div style={{ 
@@ -363,88 +514,112 @@ function App() {
                   paddingTop: '10px',
                   borderTop: '1px solid #eee'
                 }}>
-                  {activities.sort((a, b) => a.time.localeCompare(b.time)).map((activity, idx) => {
-                    const pointsAtLocation = pointData.filter(p => 
-                      p.position[0] === activity.position[0] && 
-                      p.position[1] === activity.position[1] &&
-                      p.day === selectedDay &&
-                      selectedTraces[p.traceIndex]
-                    );
+                  {activities
+                    .filter(activity => showAllDays || String(activity.day).trim() === String(selectedDay).trim())
+                    .sort((a, b) => a.time.localeCompare(b.time))
+                    .map((activity, idx) => {
+                      const pointsAtLocation = pointData.filter(p => 
+                        p.position[0] === activity.position[0] && 
+                        p.position[1] === activity.position[1] &&
+                        p.day === activity.day &&
+                        p.action === activity.action &&
+                        selectedTraces[p.traceIndex]
+                      );
 
-                    return (
-                      <div 
-                        key={idx}
-                        style={{
-                          borderLeft: `2px solid ${color}`,
-                          paddingLeft: '15px',
-                          marginBottom: '15px',
-                          position: 'relative',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          background: selectedPoint && 
-                            selectedPoint.some(p => 
-                              p.position[0] === activity.position[0] && 
-                              p.position[1] === activity.position[1]
-                            ) ? 'rgba(255, 255, 0, 0.1)' : 'transparent'
-                        }}
-                        onClick={() => {
-                          setSelectedPoint(
-                            selectedPoint && 
-                            selectedPoint.some(p => 
-                              p.position[0] === activity.position[0] && 
-                              p.position[1] === activity.position[1]
-                            ) 
-                              ? null 
-                              : pointsAtLocation
-                          );
-                          
-                          if (deckRef.current) {
-                            deckRef.current.viewState = {
-                              ...deckRef.current.viewState,
-                              longitude: activity.position[0],
-                              latitude: activity.position[1],
-                              zoom: 14,
-                              transitionDuration: 1000
-                            };
-                          }
-                        }}
-                      >
-                        <div style={{ 
-                          position: 'absolute',
-                          left: '-5px',
-                          top: '0',
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          background: color,
-                          border: '2px solid white',
-                          boxShadow: '0 0 0 1px ' + color
-                        }} />
-                        <div style={{ 
-                          fontSize: '0.9em', 
-                          fontWeight: 'bold',
-                          color: '#444'
-                        }}>{activity.time}</div>
-                        <div style={{
-                          margin: '4px 0',
-                          color: '#333'
-                        }}>{activity.action} at {activity.poi_name}</div>
-                        <div style={{ 
-                          fontSize: '0.8em',
-                          color: '#666',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}>
-                          <span style={{
-                            padding: '2px 6px',
-                            background: '#f0f0f0',
-                            borderRadius: '4px'
-                          }}>{activity.travel_mode}</span>
+                      return (
+                        <div 
+                          key={idx}
+                          style={{
+                            borderLeft: `2px solid ${color}`,
+                            paddingLeft: '15px',
+                            marginBottom: '15px',
+                            position: 'relative',
+                            cursor: 'pointer',
+                            background: selectedPoint && 
+                              selectedPoint.some(p => 
+                                p.position[0] === activity.position[0] && 
+                                p.position[1] === activity.position[1] &&
+                                p.day === activity.day &&
+                                p.action === activity.action
+                              ) ? 'rgba(0, 153, 255, 0.1)' : 'transparent',
+                            transition: 'all 0.3s ease-in-out',
+                            transform: selectedPoint && 
+                              selectedPoint.some(p => 
+                                p.position[0] === activity.position[0] && 
+                                p.position[1] === activity.position[1] &&
+                                p.day === activity.day &&
+                                p.action === activity.action
+                              ) ? 'scale(1.02)' : 'scale(1)',
+                            boxShadow: selectedPoint && 
+                              selectedPoint.some(p => 
+                                p.position[0] === activity.position[0] && 
+                                p.position[1] === activity.position[1] &&
+                                p.day === activity.day &&
+                                p.action === activity.action
+                              ) ? '0 2px 8px rgba(0, 153, 255, 0.2)' : 'none',
+                            borderRadius: '4px',
+                            padding: '8px'
+                          }}
+                          onClick={(e) => {
+                            // Prevent event from bubbling up
+                            e.stopPropagation();
+                            
+                            setSelectedPoint(
+                              selectedPoint && 
+                              selectedPoint.some(p => 
+                                p.position[0] === activity.position[0] && 
+                                p.position[1] === activity.position[1] &&
+                                p.day === activity.day &&
+                                p.action === activity.action
+                              ) 
+                                ? null 
+                                : pointsAtLocation
+                            );
+                            
+                            setExpandedTraces(prev => ({
+                              ...prev,
+                              [activity.traceIndex]: true
+                            }));
+
+                            zoomToPoint(activity.position[0], activity.position[1]);
+                          }}
+                        >
+                          <div style={{ 
+                            position: 'absolute',
+                            left: '-5px',
+                            top: '0',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: color,
+                            border: '2px solid white',
+                            boxShadow: '0 0 0 1px ' + color
+                          }} />
+                          <div style={{ 
+                            fontSize: '0.9em', 
+                            fontWeight: 'bold',
+                            color: '#444'
+                          }}>{activity.time}</div>
+                          <div style={{
+                            margin: '4px 0',
+                            color: '#333'
+                          }}>{activity.action} at {activity.poi_name}</div>
+                          <div style={{ 
+                            fontSize: '0.8em',
+                            color: '#666',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            <span style={{
+                              padding: '2px 6px',
+                              background: '#f0f0f0',
+                              borderRadius: '4px'
+                            }}>{activity.travel_mode}</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -455,6 +630,39 @@ function App() {
   };
 
   const deckRef = useRef(null);
+
+  const zoomToPoint = (longitude, latitude) => {
+    if (deckRef.current) {
+      const currentViewState = deckRef.current.viewState || {
+        longitude: -0.1278,
+        latitude: 51.5574,
+        zoom: 11,
+        pitch: 0,
+        bearing: 0
+      };
+
+      // Create a new viewState object instead of directly modifying deck props
+      const newViewState = {
+        ...currentViewState,
+        longitude: longitude + (currentViewState.longitude - longitude) * 0.3,
+        latitude: latitude + (currentViewState.latitude - latitude) * 0.3,
+        zoom: Math.min(currentViewState.zoom + 0.3, 13),
+        transitionDuration: 1000,
+        transitionInterpolator: new FlyToInterpolator(),
+      };
+
+      // Use onViewStateChange callback to update the view
+      deckRef.current.deck.setProps({
+        initialViewState: newViewState,
+        onViewStateChange: ({viewState}) => {
+          // This ensures the controller remains interactive after transition
+          deckRef.current.deck.setProps({
+            initialViewState: viewState
+          });
+        }
+      });
+    }
+  };
 
   return (
     <>
@@ -470,7 +678,7 @@ function App() {
         layers={layers}
       >
         <Map
-          mapStyle={BASEMAP.POSITRON}
+          mapStyle={BASEMAP.DARK_MATTER}
           mapLib={maplibregl}
         />
       </DeckGL>

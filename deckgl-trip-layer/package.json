@@ -7,6 +7,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "d3-ease": "^3.0.1",
     "deck.gl": "^9.0.35",
     "mapbox-gl": "^3.7.0",
     "maplibre-gl": "^4.7.1",
@@ -46,5 +47,5 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "gh-pages": "^6.2.0"
   },
-  "homepage": "https://jasoncpit.github.io/LLM-Mobility-London"
+  "homepage": "https://{jasoncpit}.github.io/{LLM-Mobility-London}"
 }
