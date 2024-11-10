@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/%7BLLM-Mobility-London%7D/static/css/main.5e756329.css",
-    "main.js": "/%7BLLM-Mobility-London%7D/static/js/main.64900c2e.js",
-    "static/js/879.7a7e9780.chunk.js": "/%7BLLM-Mobility-London%7D/static/js/879.7a7e9780.chunk.js",
-    "static/js/453.d6fca635.chunk.js": "/%7BLLM-Mobility-London%7D/static/js/453.d6fca635.chunk.js",
-    "index.html": "/%7BLLM-Mobility-London%7D/index.html",
-    "main.5e756329.css.map": "/%7BLLM-Mobility-London%7D/static/css/main.5e756329.css.map",
-    "main.64900c2e.js.map": "/%7BLLM-Mobility-London%7D/static/js/main.64900c2e.js.map",
-    "879.7a7e9780.chunk.js.map": "/%7BLLM-Mobility-London%7D/static/js/879.7a7e9780.chunk.js.map",
-    "453.d6fca635.chunk.js.map": "/%7BLLM-Mobility-London%7D/static/js/453.d6fca635.chunk.js.map"
+    "main.css": "/LLM-Mobility-London/static/css/main.5e756329.css",
+    "main.js": "/LLM-Mobility-London/static/js/main.be1aa67b.js",
+    "static/js/879.bd375427.chunk.js": "/LLM-Mobility-London/static/js/879.bd375427.chunk.js",
+    "static/js/453.d6fca635.chunk.js": "/LLM-Mobility-London/static/js/453.d6fca635.chunk.js",
+    "index.html": "/LLM-Mobility-London/index.html",
+    "main.5e756329.css.map": "/LLM-Mobility-London/static/css/main.5e756329.css.map",
+    "main.be1aa67b.js.map": "/LLM-Mobility-London/static/js/main.be1aa67b.js.map",
+    "879.bd375427.chunk.js.map": "/LLM-Mobility-London/static/js/879.bd375427.chunk.js.map",
+    "453.d6fca635.chunk.js.map": "/LLM-Mobility-London/static/js/453.d6fca635.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.5e756329.css",
-    "static/js/main.64900c2e.js"
+    "static/js/main.be1aa67b.js"
   ]
 }
