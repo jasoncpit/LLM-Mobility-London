@@ -37,24 +37,32 @@ function App() {
     2: [44, 160, 44]      // Green
   }), []); // Empty dependency array since this data is static
 
+  // Add this at the beginning of your App component to handle file paths correctly
+  const getDataPath = (filename) => {
+    // Use the repository name from package.json for GitHub Pages
+    const repoName = 'LLM-Mobility-London';
+    const isProduction = process.env.NODE_ENV === 'production';
+    return isProduction ? `/${repoName}/${filename}` : `./${filename}`;
+  };
+
   useEffect(() => {
     const loadTraces = async () => {
       try {
         // Load each file separately with error handling
         const traces = await Promise.all([
-          fetch('./first_trace.json')
+          fetch(getDataPath('first_trace.json'))
             .then(resp => resp.json())
             .catch(err => {
               console.error('Error loading first_trace.json:', err);
               return null;
             }),
-          fetch('./second_trace.json')
+          fetch(getDataPath('second_trace.json'))
             .then(resp => resp.json())
             .catch(err => {
               console.error('Error loading second_trace.json:', err);
               return null;
             }),
-          fetch('./third_trace.json')
+          fetch(getDataPath('third_trace.json'))
             .then(resp => resp.json())
             .catch(err => {
               console.error('Error loading third_trace.json:', err);
